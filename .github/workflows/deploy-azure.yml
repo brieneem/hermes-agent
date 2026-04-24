@@ -17,6 +17,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Azure Login with OIDC
         uses: azure/login@v2
         with:
@@ -24,14 +27,18 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Build and push image
+      - name: Login to ACR
         run: |
-          az acr build \
-            --registry veraregistry \
-            --image hermes:latest \
-            --image hermes:${{ github.sha }} \
-            -f Dockerfile \
-            .
+          az acr login --name veraregistry-cje7c6crg2cmhxff
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            veraregistry-cje7c6crg2cmhxff.azurecr.io/hermes:latest
+            veraregistry-cje7c6crg2cmhxff.azurecr.io/hermes:${{ github.sha }}
 
       - name: Deploy to Container Apps
         run: |
