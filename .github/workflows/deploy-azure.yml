@@ -29,7 +29,7 @@ jobs:
 
       - name: Login to ACR
         run: |
-          az acr login --name veraregistry-cje7c6crg2cmhxff
+          az acr login --name veraregistry
 
       - name: Build and push image
         uses: docker/build-push-action@v5
