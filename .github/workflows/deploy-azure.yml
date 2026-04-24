@@ -1,0 +1,43 @@
+name: Deploy Hermes to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push image
+        run: |
+          az acr build \
+            --registry veraregistry \
+            --image hermes:latest \
+            --image hermes:${{ github.sha }} \
+            .
+
+      - name: Deploy to Container Apps
+        run: |
+          az containerapp up \
+            --name hermes-app \
+            --resource-group vera-agents \
+            --image veraregistry-cje7c6crg2cmhxff.azurecr.io/hermes:latest \
+            --environment hermes-env \
+            --ingress external \
+            --target-port 8644
