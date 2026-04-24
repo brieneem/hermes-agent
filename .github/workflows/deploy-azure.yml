@@ -27,7 +27,7 @@ jobs:
       - name: Build and push image
         run: |
           az acr build \
-            --registry veraregistry \
+            --registry veraregistry-cje7c6crg2cmhxff \
             --image hermes:latest \
             --image hermes:${{ github.sha }} \
             .
